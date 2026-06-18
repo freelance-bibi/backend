@@ -6,16 +6,17 @@ from app import models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Запуск сервера...")
+    print("Запуск сервера...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    print("✅ Таблицы созданы (или уже существуют)")
+
+    print("Таблицы созданы (или уже существуют)")
 
     yield
 
-    print("🛑 Остановка сервера...")
+    print("Остановка сервера...")
     await engine.dispose()
-    print("✅ Подключение к БД закрыто")
+    print("Подключение к БД закрыто")
 
 
 app = FastAPI(
