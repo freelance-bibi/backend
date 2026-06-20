@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.database import engine, Base
-import uvicorn
 from app import models
-from routers import users
 
 
 @asynccontextmanager
@@ -38,9 +36,8 @@ async def ping():
     return {"status": "ok", "message": "pong"}
 
 
-app.include_router(users.router, prefix="/api/users", tags=["Users"])
-
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run(
         "app.main:app",
         host="127.0.0.1",
