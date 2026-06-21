@@ -89,3 +89,8 @@ class KworkOut(BaseModel):
 
 class KworkCreatedResponse(BaseModel):
     id: int
+
+
+class KworkStatusUpdate(BaseModel):
+    status: KworkStatus
+    client_id: int | None = None

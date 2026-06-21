@@ -86,3 +86,45 @@ async def get_kwork_by_id(db: AsyncSession, kwork_id: int):
         .where(models.Kwork.id == kwork_id)
     )
     return result.scalar_one_or_none()
+
+
+async def update_kwork_status(
+        db: AsyncSession,
+        kwork_id: int,
+        status: models.KworkStatus,
+        client_id: int | None = None
+):
+    kwork = await get_kwork_by_id(db, kwork_id)
+    if not kwork:
+        return None
+
+    kwork.status = status
+    if client_id is not None:
+        kwork.client_id = client_id
+        await create_chat(db, kwork.user_id, client_id, kwork_id)
+
+    await db.commit()
+    await db.refresh(kwork)
+    return kwork
+
+async def create_chat(
+        db: AsyncSession,
+        initiator_id: int,
+        receiver_id: int,
+        kwork_id: int | None = None
+):
+    existing = await db.execute(
+        select(models.Chat).where(models.Chat.kwork_id == kwork_id)
+    )
+    if existing.scalar_one_or_none():
+        return existing.scalar_one_or_none()
+
+    chat = models.Chat(
+        initiator_id=initiator_id,
+        receiver_id=receiver_id,
+        kwork_id=kwork_id
+    )
+    db.add(chat)
+    await db.commit()
+    await db.refresh(chat)
+    return chat
