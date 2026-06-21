@@ -175,6 +175,10 @@ class Kwork(Base):
         Enum(KworkStatus, native_enum=False), default=KworkStatus.NOT_COMPLETED
     )
 
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
     performer: Mapped["User"] = relationship(
         back_populates="kworks_as_performer", foreign_keys=[user_id]
     )

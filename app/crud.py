@@ -1,8 +1,9 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from app import models
-from app.schemas import UserCreate
+from app.schemas import UserCreate, KworkCreate
 from app.hashing import get_password_hash, generate_salt
 
 
@@ -42,5 +43,46 @@ async def get_user_by_email(db: AsyncSession, email: str):
 async def get_user_by_id(db: AsyncSession, user_id: int):
     result = await db.execute(
         select(models.User).where(models.User.id == user_id)
+    )
+    return result.scalar_one_or_none()
+
+async def create_kwork(db: AsyncSession, kwork_data: KworkCreate, user_id: int):
+    photo_ids_str = ",".join(kwork_data.photo_ids) if kwork_data.photo_ids else None
+
+    db_kwork = models.Kwork(
+        title=kwork_data.title,
+        description=kwork_data.description,
+        price=kwork_data.price,
+        photo_ids=photo_ids_str,
+        user_id=user_id,
+        status=models.KworkStatus.NOT_COMPLETED
+    )
+    db.add(db_kwork)
+    await db.flush()
+
+    for tag_id in kwork_data.tag_ids:
+        tag = await db.get(models.Tag, tag_id)
+        if tag:
+            db.add(models.kwork_tag(kwork_id=db_kwork.id, tag_id=tag.id))
+
+    await db.commit()
+    await db.refresh(db_kwork)
+    return db_kwork
+
+async def get_kworks(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(
+        select(models.Kwork)
+        .options(selectinload(models.Kwork.tags))
+        .offset(skip)
+        .limit(limit)
+        .order_by(models.Kwork.created_at.desc())
+    )
+    return result.scalars().all()
+
+async def get_kwork_by_id(db: AsyncSession, kwork_id: int):
+    result = await db.execute(
+        select(models.Kwork)
+        .options(selectinload(models.Kwork.tags))
+        .where(models.Kwork.id == kwork_id)
     )
     return result.scalar_one_or_none()

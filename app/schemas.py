@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
+from app.models import KworkStatus
 
 
 class SkillOut(BaseModel):
@@ -55,3 +56,36 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class TagOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+
+
+class KworkCreate(BaseModel):
+    title: str
+    description: str | None = None
+    price: int
+    tag_ids: list[int] = []
+    photo_ids: list[str] = []
+
+
+class KworkOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    description: str | None
+    price: int
+    status: KworkStatus
+    user_id: int
+    client_id: int | None = None
+    photo_ids: str | None = None
+    tags: list[TagOut] = []
+    created_at: datetime
+
+
+class KworkCreatedResponse(BaseModel):
+    id: int

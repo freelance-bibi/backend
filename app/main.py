@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from app.database import engine, Base
 import uvicorn
 from app import models
-from routers import users
+from routers import users, kworks
 
 
 @asynccontextmanager
@@ -39,6 +39,7 @@ async def ping():
 
 
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(kworks.router, prefix="/api/kworks", tags=["Kworks"])  # ← добавить
 
 if __name__ == "__main__":
     uvicorn.run(
