@@ -94,3 +94,39 @@ class KworkCreatedResponse(BaseModel):
 class KworkStatusUpdate(BaseModel):
     status: KworkStatus
     client_id: int | None = None
+
+
+class ChatOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    initiator_id: int
+    receiver_id: int
+    kwork_id: int | None
+    created_at: datetime
+    messages: list["MessageOut"] = []
+
+
+class ChatListOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    initiator_id: int
+    receiver_id: int
+    kwork_id: int | None
+    created_at: datetime
+    last_message: str | None  # Для отображения последнего сообщения
+
+
+class MessageCreate(BaseModel):
+    text: str
+
+
+class MessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    chat_id: int
+    sender_id: int
+    text: str
+    created_at: datetime

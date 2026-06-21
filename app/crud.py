@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 from app import models
 from app.schemas import UserCreate, KworkCreate
@@ -128,3 +128,49 @@ async def create_chat(
     await db.commit()
     await db.refresh(chat)
     return chat
+
+async def get_user_chats(db: AsyncSession, user_id: int):
+    result = await db.execute(
+        select(models.Chat)
+        .where(
+            (models.Chat.initiator_id == user_id) | (models.Chat.receiver_id == user_id)
+        )
+        .order_by(desc(models.Chat.created_at))
+    )
+    return result.scalars().all()
+
+
+async def get_chat_by_id(db: AsyncSession, chat_id: int):
+    result = await db.execute(
+        select(models.Chat)
+        .options(selectinload(models.Chat.messages))
+        .where(models.Chat.id == chat_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_message(
+    db: AsyncSession,
+    chat_id: int,
+    sender_id: int,
+    text: str
+):
+    db_message = models.Message(
+        chat_id=chat_id,
+        sender_id=sender_id,
+        text=text
+    )
+    db.add(db_message)
+    await db.commit()
+    await db.refresh(db_message)
+    return db_message
+
+
+async def get_chat_messages(db: AsyncSession, chat_id: int, limit: int = 50):
+    result = await db.execute(
+        select(models.Message)
+        .where(models.Message.chat_id == chat_id)
+        .order_by(desc(models.Message.created_at))
+        .limit(limit)
+    )
+    return result.scalars().all()
