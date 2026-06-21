@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.database import get_db
 from app import crud, schemas, auth
 from app.models import User
+from app.hashing import verify_password
 
 router = APIRouter()
 
@@ -36,21 +37,16 @@ async def login_user(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: AsyncSession = Depends(get_db)
 ):
-
     user = await crud.get_user_by_username(db, form_data.username)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(401, "Incorrect username or password")
 
-    if not auth.verify_password(form_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    if not verify_password(
+            form_data.password,
+            user.password_hash,
+            user.password_salt
+    ):
+        raise HTTPException(401, "Incorrect username or password")
 
     access_token = auth.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}

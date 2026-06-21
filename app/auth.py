@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.crud import get_user_by_username
 from app.schemas import TokenData
-from app.hashing import verify_password
 import os
 from dotenv import load_dotenv
 
