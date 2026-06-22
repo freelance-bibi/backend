@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from app.database import engine, Base
 import uvicorn
 from app import models
-from routers import users, kworks, chats, messages, reviews, skills, portfolio
+from routers import users, kworks, chats, messages, reviews, skills, portfolio, files
+from app.s3 import create_bucket_if_not_exists
 
 
 @asynccontextmanager
@@ -12,10 +13,10 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    await create_bucket_if_not_exists()
+
     print("Таблицы созданы (или уже существуют)")
-
     yield
-
     print("Остановка сервера...")
     await engine.dispose()
     print("Подключение к БД закрыто")
@@ -37,6 +38,7 @@ app.include_router(messages.router, prefix="/api/messages", tags=["Messages"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
 app.include_router(skills.router, prefix="/api/skills", tags=["Skills"])
 app.include_router(portfolio.router, prefix="/api/portfolio", tags=["Portfolio"])
+app.include_router(files.router, prefix="/api/files", tags=["Files"])
 
 if __name__ == "__main__":
     uvicorn.run(
