@@ -1,9 +1,9 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from sqlalchemy.orm import selectinload
 from app import models
-from app.schemas import UserCreate, KworkCreate
+from app.schemas import UserCreate, KworkCreate, ReviewCreate
 from app.hashing import get_password_hash, generate_salt
 
 
@@ -174,3 +174,83 @@ async def get_chat_messages(db: AsyncSession, chat_id: int, limit: int = 50):
         .limit(limit)
     )
     return result.scalars().all()
+
+
+async def create_review(
+        db: AsyncSession,
+        review_data: ReviewCreate,
+        author_id: int
+):
+    db_review = models.Review(
+        author_id=author_id,
+        target_id=review_data.target_id,
+        text=review_data.text,
+        status=review_data.status
+    )
+    db.add(db_review)
+    await db.commit()
+    await db.refresh(db_review)
+    return db_review
+
+
+async def get_reviews_for_user(
+        db: AsyncSession,
+        user_id: int,
+        skip: int = 0,
+        limit: int = 100
+):
+    result = await db.execute(
+        select(models.Review)
+        .where(models.Review.target_id == user_id)
+        .order_by(desc(models.Review.created_at))
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+
+async def get_user_reviews(
+        db: AsyncSession,
+        author_id: int,
+        skip: int = 0,
+        limit: int = 100
+):
+    result = await db.execute(
+        select(models.Review)
+        .where(models.Review.author_id == author_id)
+        .order_by(desc(models.Review.created_at))
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+
+async def get_review_by_id(db: AsyncSession, review_id: int):
+    return await db.get(models.Review, review_id)
+
+
+async def get_user_rating_stats(db: AsyncSession, user_id: int):
+    total_result = await db.execute(
+        select(func.count(models.Review.id))
+        .where(models.Review.target_id == user_id)
+    )
+    total = total_result.scalar() or 0
+
+    if total == 0:
+        return {"total": 0, "positive": 0, "negative": 0, "rating_percent": 0}
+
+    positive_result = await db.execute(
+        select(func.count(models.Review.id))
+        .where(models.Review.target_id == user_id)
+        .where(models.Review.status == "pos")
+    )
+    positive = positive_result.scalar() or 0
+
+    negative = total - positive
+
+    return {
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "rating_percent": round((positive / total) * 100, 1)
+    }

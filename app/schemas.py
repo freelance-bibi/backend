@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
-from app.models import KworkStatus
+from app.models import KworkStatus, ReviewStatus
+from enum import Enum
 
 
 class SkillOut(BaseModel):
@@ -115,7 +116,7 @@ class ChatListOut(BaseModel):
     receiver_id: int
     kwork_id: int | None
     created_at: datetime
-    last_message: str | None  # Для отображения последнего сообщения
+    last_message: str | None
 
 
 class MessageCreate(BaseModel):
@@ -129,4 +130,21 @@ class MessageOut(BaseModel):
     chat_id: int
     sender_id: int
     text: str
+    created_at: datetime
+
+
+class ReviewCreate(BaseModel):
+    target_id: int
+    text: str
+    status: ReviewStatus
+
+
+class ReviewOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    author_id: int
+    target_id: int
+    text: str
+    status: ReviewStatus
     created_at: datetime

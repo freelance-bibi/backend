@@ -17,8 +17,8 @@ from app.database import Base
 
 
 class ReviewStatus(PyEnum):
-    POSITIVE = "pos"
-    NEGATIVE = "neg"
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
 
 
 class KworkStatus(PyEnum):
