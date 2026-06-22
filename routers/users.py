@@ -7,6 +7,7 @@ from app.models import User
 from app.hashing import verify_password
 from app.schemas import UserUpdate
 
+
 router = APIRouter()
 
 @router.post("/register", response_model=schemas.UserOut)

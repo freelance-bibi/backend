@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import UploadFile
 import uuid
 
+
 load_dotenv()
 
 S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL")

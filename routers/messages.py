@@ -5,6 +5,7 @@ from app import crud, schemas
 from app.models import User
 from app.auth import get_current_user
 
+
 router = APIRouter()
 
 @router.post("/{chat_id}", response_model=schemas.MessageOut)

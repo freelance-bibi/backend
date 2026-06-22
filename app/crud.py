@@ -6,6 +6,7 @@ from app import models
 from app.schemas import UserCreate, KworkCreate, ReviewCreate, PortfolioCreate, UserUpdate
 from app.hashing import get_password_hash, generate_salt
 
+
 async def create_user(db: AsyncSession, user_data: UserCreate):
     salt = generate_salt()
     hashed_password = get_password_hash(user_data.password, salt)

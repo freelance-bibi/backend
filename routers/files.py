@@ -7,6 +7,7 @@ from app import crud
 from app.schemas import UserUpdate
 from app.database import get_db
 
+
 router = APIRouter()
 
 @router.post("/upload/avatar")

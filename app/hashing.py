@@ -2,6 +2,7 @@ import os
 import bcrypt
 import base64
 
+
 def generate_salt() -> str:
     salt = os.urandom(32)
     return base64.b64encode(salt).decode('utf-8')

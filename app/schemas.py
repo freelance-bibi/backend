@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
 from app.models import KworkStatus, ReviewStatus
 
+
 class SkillOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
