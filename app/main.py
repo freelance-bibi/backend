@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from app.database import engine, Base
 import uvicorn
 from app import models
-from routers import users, kworks, chats, messages, reviews, skills
+from routers import users, kworks, chats, messages, reviews, skills, portfolio
 
 
 @asynccontextmanager
@@ -44,6 +44,7 @@ app.include_router(chats.router, prefix="/api/chats", tags=["Chats"])
 app.include_router(messages.router, prefix="/api/messages", tags=["Messages"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
 app.include_router(skills.router, prefix="/api/skills", tags=["Skills"])
+app.include_router(portfolio.router, prefix="/api/portfolio", tags=["Portfolio"])
 
 if __name__ == "__main__":
     uvicorn.run(

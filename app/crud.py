@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func
 from sqlalchemy.orm import selectinload
 from app import models
-from app.schemas import UserCreate, KworkCreate, ReviewCreate
+from app.schemas import UserCreate, KworkCreate, ReviewCreate, PortfolioCreate
 from app.hashing import get_password_hash, generate_salt
 
 
@@ -313,5 +313,45 @@ async def delete_skill(db: AsyncSession, skill_id: int):
     if not skill:
         return False
     await db.delete(skill)
+    await db.commit()
+    return True
+
+async def create_portfolio(
+    db: AsyncSession,
+    portfolio_data: PortfolioCreate,
+    user_id: int
+):
+    db_portfolio = models.Portfolio(
+        title=portfolio_data.title,
+        photo_id=portfolio_data.photo_id,
+        user_id=user_id
+    )
+    db.add(db_portfolio)
+    await db.commit()
+    await db.refresh(db_portfolio)
+    return db_portfolio
+
+async def get_user_portfolio(
+    db: AsyncSession,
+    user_id: int,
+    skip: int = 0,
+    limit: int = 100
+):
+    result = await db.execute(
+        select(models.Portfolio)
+        .where(models.Portfolio.user_id == user_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+async def get_portfolio_by_id(db: AsyncSession, portfolio_id: int):
+    return await db.get(models.Portfolio, portfolio_id)
+
+async def delete_portfolio(db: AsyncSession, portfolio_id: int):
+    portfolio = await get_portfolio_by_id(db, portfolio_id)
+    if not portfolio:
+        return False
+    await db.delete(portfolio)
     await db.commit()
     return True

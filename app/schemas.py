@@ -162,3 +162,18 @@ class SkillOut(BaseModel):
 
 class UserSkillAdd(BaseModel):
     skill_ids: list[int]
+
+
+class PortfolioCreate(BaseModel):
+    title: str
+    description: str | None = None
+    photo_id: str | None = None
+
+
+class PortfolioOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    photo_id: str | None
+    user_id: int
