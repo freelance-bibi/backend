@@ -242,7 +242,7 @@ async def get_user_rating_stats(db: AsyncSession, user_id: int):
     positive_result = await db.execute(
         select(func.count(models.Review.id))
         .where(models.Review.target_id == user_id)
-        .where(models.Review.status == "pos")
+        .where(models.Review.status == "POSITIVE")
     )
     positive = positive_result.scalar() or 0
 
@@ -254,3 +254,64 @@ async def get_user_rating_stats(db: AsyncSession, user_id: int):
         "negative": negative,
         "rating_percent": round((positive / total) * 100, 1)
     }
+
+
+async def create_skill(db: AsyncSession, name: str):
+    db_skill = models.Skill(name=name)
+    db.add(db_skill)
+    await db.commit()
+    await db.refresh(db_skill)
+    return db_skill
+
+async def get_skill_by_name(db: AsyncSession, name: str):
+    result = await db.execute(
+        select(models.Skill).where(models.Skill.name == name)
+    )
+    return result.scalar_one_or_none()
+
+async def get_all_skills(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(
+        select(models.Skill).offset(skip).limit(limit).order_by(models.Skill.name)
+    )
+    return result.scalars().all()
+
+async def get_user_skills(db: AsyncSession, user_id: int):
+    result = await db.execute(
+        select(models.Skill)
+        .join(models.user_skill, models.Skill.id == models.user_skill.c.skill_id)
+        .where(models.user_skill.c.user_id == user_id)
+        .order_by(models.Skill.name)
+    )
+    return result.scalars().all()
+
+async def add_skills_to_user(db: AsyncSession, user_id: int, skill_ids: list[int]):
+    for skill_id in skill_ids:
+        result = await db.execute(
+            models.user_skill.select().where(
+                models.user_skill.c.user_id == user_id,
+                models.user_skill.c.skill_id == skill_id
+            )
+        )
+        if not result.first():
+            await db.execute(
+                models.user_skill.insert().values(user_id=user_id, skill_id=skill_id)
+            )
+    await db.commit()
+
+async def remove_skill_from_user(db: AsyncSession, user_id: int, skill_id: int):
+    result = await db.execute(
+        models.user_skill.delete().where(
+            models.user_skill.c.user_id == user_id,
+            models.user_skill.c.skill_id == skill_id
+        )
+    )
+    await db.commit()
+    return result.rowcount > 0
+
+async def delete_skill(db: AsyncSession, skill_id: int):
+    skill = await db.get(models.Skill, skill_id)
+    if not skill:
+        return False
+    await db.delete(skill)
+    await db.commit()
+    return True

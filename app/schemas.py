@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
 from app.models import KworkStatus, ReviewStatus
-from enum import Enum
 
 
 class SkillOut(BaseModel):
@@ -148,3 +147,18 @@ class ReviewOut(BaseModel):
     text: str
     status: ReviewStatus
     created_at: datetime
+
+
+class SkillCreate(BaseModel):
+    name: str
+
+
+class SkillOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
+class UserSkillAdd(BaseModel):
+    skill_ids: list[int]
