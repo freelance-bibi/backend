@@ -2,7 +2,7 @@
 
 REST + WebSocket API для биржи фриланса для студентов. Написан на **FastAPI**
 (async), с PostgreSQL в качестве БД и MinIO (S3-совместимое хранилище) для
-файлов. Фронтенд лежит в папке [`../frontend`](../frontend).
+файлов. Фронтенд лежит в репозитории [`frontend`]([frontend](https://github.com/freelance-bibi/frontend)).
 
 ## Стек
 
